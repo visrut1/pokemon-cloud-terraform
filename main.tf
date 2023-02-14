@@ -13,53 +13,6 @@ provider "aws" {
   profile = "default"
 }
 
-
-resource "aws_security_group" "app-security-group" {
-  name        = "app-security"
-  description = "opening port 8080 for micronaut"
-  vpc_id      = data.aws_vpc.default_vpc_data.id
-  ingress {
-    description      = "Exposing 8080"
-    from_port        = 8080
-    protocol         = "tcp"
-    to_port          = 8080
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-
-  }
-  ingress {
-    description = "SSH port"
-    from_port   = 23
-    protocol    = "tcp"
-    to_port     = 23
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-  ingress {
-    description = "tcp port"
-    from_port   = 443
-    protocol    = "tcp"
-    to_port     = 443
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-  ingress {
-    description = "http port"
-    from_port   = 80
-    protocol    = "tcp"
-    to_port     = 80
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-}
-
 data "aws_vpc" "default_vpc_data" {
   default = true
 }
@@ -69,13 +22,12 @@ data "aws_subnet" "default_subnet" {
   vpc_id = data.aws_vpc.default_vpc_data.id
 }
 
-resource "aws_security_group" "database-security-group-rds" {
-  name = "rds-ec2-sg"
-  ingress{
-    from_port = 3306
-    protocol = "tcp"
-    to_port = 3306
-    security_groups = [aws_security_group.app-security-group.id]
-  }
+module "ec2" {
+  source    = "./EC2"
+  subnet_id = data.aws_vpc.default_vpc_data.id
 }
 
+module "rds" {
+  source      = "./DB"
+  instance_sg = module.ec2.instance-sg-id
+}
