@@ -1,7 +1,7 @@
 resource "aws_security_group" "app-security-group" {
   name        = "app-security"
   description = "opening port 8080 for micronaut"
-  vpc_id      = var.subnet_id
+  vpc_id      = var.vpc_id
   ingress {
     description      = "Exposing 8080"
     from_port        = 8080

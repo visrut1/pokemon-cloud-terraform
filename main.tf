@@ -11,6 +11,7 @@ terraform {
 provider "aws" {
   region  = "ap-south-1"
   profile = "default"
+  default_tags {}
 }
 
 data "aws_vpc" "default_vpc_data" {
@@ -24,7 +25,8 @@ data "aws_subnet" "default_subnet" {
 
 module "ec2" {
   source    = "./EC2"
-  subnet_id = data.aws_vpc.default_vpc_data.id
+  subnet_id = data.aws_subnet.default_subnet.id
+  vpc_id = data.aws_vpc.default_vpc_data.id
 }
 
 module "rds" {
